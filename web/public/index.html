@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LeadFeed — AI SDR (Freemium)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+
+    /* Glassy SaaS vibe */
+    .glass {
+      background: rgba(15, 23, 42, 0.62);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      backdrop-filter: blur(12px);
+    }
+
+    /* Keep the original freemium blur model */
+    .blurred { filter: blur(7px); user-select: none; pointer-events: none; }
+
+    /* Simple shimmer skeleton */
+    .skel {
+      background: linear-gradient(110deg, rgba(30,41,59,0.65) 8%, rgba(51,65,85,0.85) 18%, rgba(30,41,59,0.65) 33%);
+      background-size: 200% 100%;
+      animation: shine 1.15s linear infinite;
+    }
+    @keyframes shine { to { background-position-x: -200%; } }
+
+    /* nicer scrollbar for chip rows */
+    .chips::-webkit-scrollbar { height: 10px; }
+    .chips::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.18); border-radius: 999px; }
+  </style>
+
+  <script>
+    // Tailwind config (CDN)
+    tailwind.config = {
+      theme: {
+        extend: {
+          boxShadow: {
+            soft: '0 10px 30px rgba(0,0,0,0.35)',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+  <!-- Background accents -->
+  <div class="pointer-events-none fixed inset-0 -z-10">
+    <div class="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-emerald-500/10 blur-3xl"></div>
+    <div class="absolute top-24 -right-40 h-[28rem] w-[28rem] rounded-full bg-sky-500/10 blur-3xl"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(148,163,184,0.08)_1px,transparent_0)] [background-size:28px_28px] opacity-30"></div>
+  </div>
+
+  <header class="max-w-6xl mx-auto px-5 sm:px-6 pt-8 pb-6">
+    <div class="flex items-start justify-between gap-6">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 rounded-2xl bg-gradient-to-br from-emerald-400/90 to-sky-400/90 shadow-soft"></div>
+          <div>
+            <h1 class="text-2xl md:text-3xl font-bold tracking-tight">LeadFeed</h1>
+            <p class="text-slate-400 mt-0.5 text-sm md:text-base">Buyer‑intent opportunities for performance marketing agencies — scored <span class="text-slate-200 font-semibold">HOT</span>/<span class="text-slate-200 font-semibold">WARM</span>/<span class="text-slate-200 font-semibold">SKIP</span>.</p>
+          </div>
+        </div>
+
+        <div class="mt-4 flex flex-wrap items-center gap-2 text-xs text-slate-400">
+          <span class="inline-flex items-center gap-2 rounded-full bg-slate-900/70 border border-slate-800 px-3 py-1">
+            <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+            Live demo feed
+          </span>
+          <span class="inline-flex items-center gap-2 rounded-full bg-slate-900/70 border border-slate-800 px-3 py-1">
+            Generated <span id="generatedAt" class="text-slate-200 font-semibold">—</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="glass rounded-2xl px-4 py-3 shadow-soft w-[16.5rem] hidden sm:block">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-xs text-slate-400">Freemium</div>
+            <div class="text-sm mt-0.5">Shows <span id="freeCount" class="font-semibold text-slate-100">5</span> free leads/day</div>
+          </div>
+          <div class="h-10 w-10 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-center text-slate-200">
+            <span class="text-sm font-bold">PRO</span>
+          </div>
+        </div>
+        <div class="mt-2 text-xs text-slate-500">Everything after the free limit is blurred & locked.</div>
+      </div>
+    </div>
+
+    <!-- KPI row -->
+    <section class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div class="glass rounded-2xl p-4 shadow-soft">
+        <div class="text-xs text-slate-400">Leads (filtered)</div>
+        <div id="kpiTotal" class="mt-1 text-2xl font-bold">—</div>
+      </div>
+      <div class="glass rounded-2xl p-4 shadow-soft">
+        <div class="text-xs text-slate-400">HOT</div>
+        <div id="kpiHot" class="mt-1 text-2xl font-bold text-red-200">—</div>
+      </div>
+      <div class="glass rounded-2xl p-4 shadow-soft">
+        <div class="text-xs text-slate-400">WARM</div>
+        <div id="kpiWarm" class="mt-1 text-2xl font-bold text-amber-200">—</div>
+      </div>
+      <div class="glass rounded-2xl p-4 shadow-soft">
+        <div class="text-xs text-slate-400">SKIP</div>
+        <div id="kpiSkip" class="mt-1 text-2xl font-bold text-slate-200">—</div>
+      </div>
+    </section>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-5 sm:px-6 pb-16">
+    <!-- Filters / actions -->
+    <section class="glass rounded-2xl p-4 sm:p-5 shadow-soft">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div class="flex items-start gap-3">
+          <div class="h-10 w-10 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-center">
+            <span class="text-slate-200 font-bold">LF</span>
+          </div>
+          <div>
+            <div class="text-sm font-semibold">Today’s feed</div>
+            <div class="text-xs text-slate-400">Filter by geography, score, or keyword. Click chips for fast toggles.</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="refreshBtn" class="bg-slate-900/60 hover:bg-slate-900 border border-slate-800 text-slate-200 font-semibold px-4 py-2 rounded-xl">Refresh</button>
+          <button id="upgradeBtn" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold px-4 py-2 rounded-xl">Upgrade to Pro</button>
+        </div>
+      </div>
+
+      <div class="mt-4 grid grid-cols-1 md:grid-cols-12 gap-3">
+        <div class="md:col-span-6">
+          <label class="text-xs text-slate-400">Search</label>
+          <input id="search" placeholder="Search title/summary…" class="mt-1 w-full bg-slate-900/60 border border-slate-800 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400/30 focus:border-emerald-400/40" />
+        </div>
+        <div class="md:col-span-3">
+          <label class="text-xs text-slate-400">Geography</label>
+          <select id="geoFilter" class="mt-1 w-full bg-slate-900/60 border border-slate-800 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-sky-400/30 focus:border-sky-400/40">
+            <option value="ALL">All geographies</option>
+            <option value="US">US</option>
+            <option value="UK">UK</option>
+            <option value="India">India</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="md:col-span-3">
+          <label class="text-xs text-slate-400">Score</label>
+          <select id="scoreFilter" class="mt-1 w-full bg-slate-900/60 border border-slate-800 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-400/40">
+            <option value="ALL">All scores</option>
+            <option value="HOT">HOT</option>
+            <option value="WARM">WARM</option>
+            <option value="SKIP">SKIP</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mt-4 grid grid-cols-1 md:grid-cols-12 gap-3">
+        <div class="md:col-span-6">
+          <div class="text-xs text-slate-400">Quick geos</div>
+          <div id="geoChips" class="chips mt-2 flex gap-2 overflow-x-auto pb-1"></div>
+        </div>
+        <div class="md:col-span-6">
+          <div class="text-xs text-slate-400">Quick scores</div>
+          <div id="scoreChips" class="chips mt-2 flex gap-2 overflow-x-auto pb-1"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- States -->
+    <section id="loadingState" class="mt-5 hidden grid grid-cols-1 gap-4"></section>
+
+    <section id="errorState" class="mt-5 hidden">
+      <div class="glass rounded-2xl p-6 shadow-soft">
+        <div class="text-lg font-bold">Couldn’t load leads</div>
+        <div id="errorMsg" class="text-slate-400 mt-1">—</div>
+        <div class="mt-4 flex gap-2">
+          <button id="retryBtn" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold px-4 py-2 rounded-xl">Retry</button>
+          <a class="bg-slate-900/60 hover:bg-slate-900 border border-slate-800 text-slate-200 font-semibold px-4 py-2 rounded-xl" href="/">Reload page</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="emptyState" class="mt-5 hidden">
+      <div class="glass rounded-2xl p-7 shadow-soft text-center">
+        <div class="mx-auto h-12 w-12 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-center">
+          <span class="text-lg font-bold">∅</span>
+        </div>
+        <div class="mt-3 text-lg font-bold">No leads match your filters</div>
+        <div class="text-slate-400 mt-1">Try clearing search or switching geography/score.</div>
+        <button id="clearFiltersBtn" class="mt-4 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 text-slate-200 font-semibold px-4 py-2 rounded-xl">Clear filters</button>
+      </div>
+    </section>
+
+    <!-- Lead list -->
+    <section id="leadList" class="mt-5 grid grid-cols-1 gap-4"></section>
+
+    <!-- Paywall -->
+    <section id="paywall" class="mt-10 glass rounded-3xl p-6 sm:p-8 shadow-soft">
+      <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-bold tracking-tight">Unlock the full feed</h2>
+          <p class="text-slate-400 mt-1">Pro includes full daily feed, dedupe, and first‑message templates tuned for performance agencies.</p>
+          <ul class="mt-4 space-y-2 text-sm text-slate-300">
+            <li class="flex gap-2"><span class="text-emerald-400">•</span> Unblur everything after the free limit</li>
+            <li class="flex gap-2"><span class="text-emerald-400">•</span> Higher-quality scoring + signals</li>
+            <li class="flex gap-2"><span class="text-emerald-400">•</span> Weekly report + tracking (next)</li>
+          </ul>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full md:max-w-[34rem]">
+          <div class="rounded-2xl bg-slate-900/55 border border-slate-800 p-5">
+            <div class="text-xs text-slate-400">Starter</div>
+            <div class="mt-1 text-3xl font-bold">$499<span class="text-sm font-normal text-slate-400">/mo</span></div>
+            <div class="mt-1 text-sm text-slate-400">5 qualified/day</div>
+            <button class="mt-4 w-full bg-slate-900 hover:bg-slate-900/80 border border-slate-700 text-slate-100 font-semibold px-4 py-2.5 rounded-xl" id="starterBtn">Choose Starter</button>
+          </div>
+          <div class="rounded-2xl bg-gradient-to-b from-emerald-500/15 to-sky-500/10 border border-emerald-400/25 p-5 relative overflow-hidden">
+            <div class="absolute top-3 right-3 text-[11px] font-bold px-2 py-1 rounded-full bg-emerald-400/15 border border-emerald-400/30 text-emerald-200">Most popular</div>
+            <div class="text-xs text-slate-300">Growth</div>
+            <div class="mt-1 text-3xl font-bold">$999<span class="text-sm font-normal text-slate-300">/mo</span></div>
+            <div class="mt-1 text-sm text-slate-300">10 qualified/day + weekly report</div>
+            <button class="mt-4 w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold px-4 py-2.5 rounded-xl" id="growthBtn">Choose Growth</button>
+          </div>
+        </div>
+      </div>
+      <p class="text-xs text-slate-500 mt-5">Demo paywall. Wire Stripe + auth later.</p>
+    </section>
+  </main>
+
+  <template id="leadCardTpl">
+    <article class="glass rounded-2xl p-5 sm:p-6 shadow-soft relative overflow-hidden">
+      <div class="cardBody">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="scoreTag text-xs font-bold px-2.5 py-1 rounded-full border"></span>
+              <span class="geoTag text-xs text-slate-200 px-2.5 py-1 rounded-full bg-slate-900/60 border border-slate-800"></span>
+              <span class="text-xs text-slate-500 sourceTag"></span>
+            </div>
+            <h3 class="mt-2 font-bold text-lg sm:text-xl tracking-tight title"></h3>
+            <p class="mt-1.5 text-slate-300 leading-relaxed summary"></p>
+            <div class="mt-3 flex flex-wrap gap-2 signals"></div>
+          </div>
+          <div class="flex items-center gap-3 shrink-0">
+            <a class="openLink text-sm font-semibold text-sky-300 hover:text-sky-200 underline underline-offset-4" target="_blank" rel="noreferrer">Open</a>
+          </div>
+        </div>
+
+        <div class="mt-4 rounded-2xl bg-slate-900/55 border border-slate-800 p-4">
+          <div class="text-xs text-slate-400">Recommended first message</div>
+          <div class="mt-1 text-sm text-slate-100 recommended"></div>
+        </div>
+      </div>
+
+      <!-- Locked overlay (not blurred) -->
+      <div class="lockOverlay hidden absolute inset-0 flex items-center justify-center">
+        <div class="absolute inset-0 bg-slate-950/35"></div>
+        <div class="relative mx-6 max-w-md rounded-2xl bg-slate-950/70 border border-slate-800 p-5 text-center shadow-soft">
+          <div class="text-sm font-bold">Locked lead</div>
+          <div class="text-xs text-slate-400 mt-1">Upgrade to see full details + message template.</div>
+          <button class="mt-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold px-4 py-2 rounded-xl upgradeInline">Upgrade</button>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <template id="skeletonCardTpl">
+    <div class="glass rounded-2xl p-5 sm:p-6 shadow-soft">
+      <div class="flex items-start justify-between gap-4">
+        <div class="min-w-0 w-full">
+          <div class="flex items-center gap-2">
+            <div class="skel h-6 w-16 rounded-full"></div>
+            <div class="skel h-6 w-20 rounded-full"></div>
+            <div class="skel h-4 w-24 rounded"></div>
+          </div>
+          <div class="skel mt-3 h-6 w-3/4 rounded"></div>
+          <div class="skel mt-2 h-4 w-full rounded"></div>
+          <div class="skel mt-2 h-4 w-5/6 rounded"></div>
+          <div class="mt-4 grid grid-cols-3 gap-2">
+            <div class="skel h-6 rounded-full"></div>
+            <div class="skel h-6 rounded-full"></div>
+            <div class="skel h-6 rounded-full"></div>
+          </div>
+          <div class="skel mt-5 h-20 w-full rounded-2xl"></div>
+        </div>
+        <div class="skel h-5 w-12 rounded"></div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    const state = {
+      data: null,
+      loading: false,
+      error: null,
+    };
+
+    function scoreBadgeClasses(score){
+      if(score === 'HOT') return 'bg-red-500/15 text-red-200 border-red-500/25';
+      if(score === 'WARM') return 'bg-amber-400/15 text-amber-200 border-amber-400/25';
+      return 'bg-slate-500/20 text-slate-200 border-slate-500/25';
+    }
+
+    function matches(lead, geo, score, q){
+      if(geo !== 'ALL' && lead.geo !== geo) return false;
+      if(score !== 'ALL' && lead.score !== score) return false;
+      if(q){
+        const hay = (lead.title + ' ' + lead.summary).toLowerCase();
+        if(!hay.includes(q.toLowerCase())) return false;
+      }
+      return true;
+    }
+
+    function chipButton(label, active=false, tone='slate'){
+      const btn = document.createElement('button');
+      const base = 'text-xs font-semibold px-3 py-1.5 rounded-full border transition whitespace-nowrap';
+      const tones = {
+        slate: active
+          ? 'bg-slate-200/10 border-slate-200/20 text-slate-100'
+          : 'bg-slate-900/55 border-slate-800 text-slate-300 hover:text-slate-100 hover:border-slate-700',
+        sky: active
+          ? 'bg-sky-300/15 border-sky-300/20 text-sky-100'
+          : 'bg-slate-900/55 border-slate-800 text-slate-300 hover:text-slate-100 hover:border-slate-700',
+        emerald: active
+          ? 'bg-emerald-300/15 border-emerald-300/20 text-emerald-100'
+          : 'bg-slate-900/55 border-slate-800 text-slate-300 hover:text-slate-100 hover:border-slate-700',
+        amber: active
+          ? 'bg-amber-300/15 border-amber-300/20 text-amber-100'
+          : 'bg-slate-900/55 border-slate-800 text-slate-300 hover:text-slate-100 hover:border-slate-700',
+        red: active
+          ? 'bg-red-300/15 border-red-300/20 text-red-100'
+          : 'bg-slate-900/55 border-slate-800 text-slate-300 hover:text-slate-100 hover:border-slate-700',
+      };
+      btn.className = `${base} ${tones[tone] || tones.slate}`;
+      btn.textContent = label;
+      return btn;
+    }
+
+    function setKpis(filtered){
+      const total = filtered.length;
+      const hot = filtered.filter(l => l.score === 'HOT').length;
+      const warm = filtered.filter(l => l.score === 'WARM').length;
+      const skip = filtered.filter(l => l.score === 'SKIP').length;
+
+      document.getElementById('kpiTotal').textContent = state.loading ? '—' : total;
+      document.getElementById('kpiHot').textContent = state.loading ? '—' : hot;
+      document.getElementById('kpiWarm').textContent = state.loading ? '—' : warm;
+      document.getElementById('kpiSkip').textContent = state.loading ? '—' : skip;
+    }
+
+    function renderChips(){
+      const geo = document.getElementById('geoFilter').value;
+      const score = document.getElementById('scoreFilter').value;
+
+      const geoWrap = document.getElementById('geoChips');
+      const scoreWrap = document.getElementById('scoreChips');
+      geoWrap.innerHTML = '';
+      scoreWrap.innerHTML = '';
+
+      const geos = [
+        { label: 'All', value: 'ALL', tone: 'slate' },
+        { label: 'US', value: 'US', tone: 'emerald' },
+        { label: 'UK', value: 'UK', tone: 'sky' },
+        { label: 'India', value: 'India', tone: 'amber' },
+        { label: 'Other', value: 'Other', tone: 'slate' },
+      ];
+      geos.forEach(g => {
+        const btn = chipButton(g.label, geo === g.value, g.tone);
+        btn.addEventListener('click', () => {
+          document.getElementById('geoFilter').value = g.value;
+          render();
+        });
+        geoWrap.appendChild(btn);
+      });
+
+      const scores = [
+        { label: 'All', value: 'ALL', tone: 'slate' },
+        { label: 'HOT', value: 'HOT', tone: 'red' },
+        { label: 'WARM', value: 'WARM', tone: 'amber' },
+        { label: 'SKIP', value: 'SKIP', tone: 'slate' },
+      ];
+      scores.forEach(s => {
+        const btn = chipButton(s.label, score === s.value, s.tone);
+        btn.addEventListener('click', () => {
+          document.getElementById('scoreFilter').value = s.value;
+          render();
+        });
+        scoreWrap.appendChild(btn);
+      });
+    }
+
+    function showLoadingSkeletons(show){
+      const wrap = document.getElementById('loadingState');
+      wrap.innerHTML = '';
+      wrap.classList.toggle('hidden', !show);
+      if(!show) return;
+
+      const tpl = document.getElementById('skeletonCardTpl');
+      for(let i=0;i<5;i++){
+        wrap.appendChild(tpl.content.cloneNode(true));
+      }
+    }
+
+    function setError(err){
+      state.error = err;
+      document.getElementById('errorState').classList.toggle('hidden', !err);
+      document.getElementById('errorMsg').textContent = err ? String(err) : '—';
+    }
+
+    function render(){
+      const list = document.getElementById('leadList');
+      const empty = document.getElementById('emptyState');
+
+      // controls
+      const geo = document.getElementById('geoFilter').value;
+      const score = document.getElementById('scoreFilter').value;
+      const q = document.getElementById('search').value.trim();
+
+      renderChips();
+
+      if(state.loading){
+        list.innerHTML = '';
+        empty.classList.add('hidden');
+        setKpis([]);
+        return;
+      }
+
+      const tpl = document.getElementById('leadCardTpl');
+      const freeCount = state.data?.freeLeadCount ?? 5;
+
+      const filtered = (state.data?.leads ?? []).filter(l => matches(l, geo, score, q));
+      setKpis(filtered);
+
+      list.innerHTML = '';
+
+      if(filtered.length === 0){
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+
+      filtered.forEach((lead, idx) => {
+        const node = tpl.content.cloneNode(true);
+
+        const card = node.querySelector('article');
+        const body = node.querySelector('.cardBody');
+        const lockOverlay = node.querySelector('.lockOverlay');
+
+        node.querySelector('.scoreTag').textContent = lead.score;
+        node.querySelector('.scoreTag').className = `scoreTag text-xs font-bold px-2.5 py-1 rounded-full border ${scoreBadgeClasses(lead.score)}`;
+
+        node.querySelector('.geoTag').textContent = lead.geo;
+        node.querySelector('.sourceTag').textContent = lead.source;
+        node.querySelector('.title').textContent = lead.title;
+        node.querySelector('.summary').textContent = lead.summary;
+        node.querySelector('.openLink').href = lead.url;
+        node.querySelector('.recommended').textContent = lead.recommended_message || '—';
+
+        const sigWrap = node.querySelector('.signals');
+        (lead.signals || []).slice(0,6).forEach(s => {
+          const pill = document.createElement('span');
+          pill.className = 'text-xs px-2.5 py-1 rounded-full bg-slate-900/55 border border-slate-800 text-slate-300';
+          pill.textContent = s;
+          sigWrap.appendChild(pill);
+        });
+
+        // Freemium lock (blur content only, overlay CTA)
+        if (idx >= freeCount) {
+          body.classList.add('blurred');
+          lockOverlay.classList.remove('hidden');
+
+          node.querySelector('.upgradeInline').addEventListener('click', () => {
+            document.getElementById('upgradeBtn').click();
+          });
+        }
+
+        list.appendChild(node);
+      });
+    }
+
+    async function loadLeads(){
+      setError(null);
+      state.loading = true;
+      showLoadingSkeletons(true);
+      document.getElementById('emptyState').classList.add('hidden');
+      document.getElementById('leadList').innerHTML = '';
+      render();
+
+      try {
+        const res = await fetch('/api/leads', { cache: 'no-store' });
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        state.data = data;
+        document.getElementById('generatedAt').textContent = data.generatedAt || '—';
+        document.getElementById('freeCount').textContent = data.freeLeadCount ?? 5;
+      } catch (e) {
+        setError(e?.message || e);
+      } finally {
+        state.loading = false;
+        showLoadingSkeletons(false);
+        render();
+      }
+    }
+
+    function wireUi(){
+      document.getElementById('geoFilter').addEventListener('change', render);
+      document.getElementById('scoreFilter').addEventListener('change', render);
+      document.getElementById('search').addEventListener('input', render);
+
+      document.getElementById('upgradeBtn').addEventListener('click', () => {
+        alert('Demo paywall. Next: Stripe checkout + auth.');
+      });
+      document.getElementById('starterBtn').addEventListener('click', () => document.getElementById('upgradeBtn').click());
+      document.getElementById('growthBtn').addEventListener('click', () => document.getElementById('upgradeBtn').click());
+
+      document.getElementById('clearFiltersBtn').addEventListener('click', () => {
+        document.getElementById('geoFilter').value = 'ALL';
+        document.getElementById('scoreFilter').value = 'ALL';
+        document.getElementById('search').value = '';
+        render();
+      });
+
+      document.getElementById('refreshBtn').addEventListener('click', loadLeads);
+      document.getElementById('retryBtn').addEventListener('click', loadLeads);
+    }
+
+    async function boot(){
+      wireUi();
+      renderChips();
+      await loadLeads();
+    }
+
+    boot();
+  </script>
+</body>
+</html>

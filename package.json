@@ -1,0 +1,52 @@
+{
+  "name": "ai-sdr",
+  "version": "1.0.0",
+  "description": "AI Sales Development Rep - Automated lead generation and qualification",
+  "main": "pipeline/collector.js",
+  "scripts": {
+    "collect:all": "node pipeline/collector.js --all",
+    "collect:hn": "node sources/hn_intent.js",
+    "collect:reddit": "node sources/reddit_jobs.js",
+    "collect:upwork": "node sources/upwork_rss.js",
+    "collect:linkedin": "node sources/linkedin_scraper.js",
+    "score": "node pipeline/scorer.js",
+    "enrich": "node pipeline/enricher.js",
+    "export:airtable": "node pipeline/exporter.js --target=airtable",
+    "export:sheets": "node pipeline/exporter.js --target=sheets",
+    "export:webhook": "node pipeline/exporter.js --target=webhook",
+    "export:all": "node pipeline/exporter.js --target=all",
+    "email": "node lib/email.js",
+    "pipeline": "node pipeline/full_pipeline.js",
+    "dashboard": "node web/server.js",
+    "test": "node tests/pipeline.test.js",
+    "docker:build": "docker build -t ai-sdr .",
+    "docker:run": "docker run -p 4010:4010 --env-file .env ai-sdr"
+  },
+  "dependencies": {
+    "airtable": "^0.12.2",
+    "axios": "^1.6.2",
+    "cheerio": "^1.0.0-rc.12",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "google-spreadsheet": "^4.1.1",
+    "googleapis": "^128.0.0",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.9.7",
+    "rss-parser": "^3.13.0",
+    "puppeteer": "^21.5.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "sales",
+    "lead-generation",
+    "ai",
+    "openai",
+    "marketing",
+    "automation"
+  ],
+  "author": "",
+  "license": "MIT"
+}

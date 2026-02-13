@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "score": { "type": "string", "enum": ["HOT", "WARM", "SKIP"] },
+    "geo": { "type": "string", "enum": ["US", "UK", "Other"] },
+    "intent": { "type": "string", "enum": ["buyer_request", "hiring_employee", "self_promo", "other"] },
+    "why": { "type": "string" },
+    "signals": { "type": "array", "items": { "type": "string" }, "maxItems": 8 },
+    "first_message": { "type": "string" }
+  },
+  "required": ["score", "geo", "intent", "why", "signals", "first_message"]
+}

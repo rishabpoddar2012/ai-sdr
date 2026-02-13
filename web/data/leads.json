@@ -1,0 +1,24 @@
+{
+  "generatedAt": "2026-02-05T19:39:24.880Z",
+  "plan": "freemium",
+  "freeLeadCount": 5,
+  "leads": [
+    {
+      "id": "li-1770320364880-0",
+      "source": "linkedin_posts",
+      "geo": "Other",
+      "score": "WARM",
+      "title": "I need a proper paid media brain for a couple of days ... Meta / Google …",
+      "summary": "They’re requesting short-term paid media help (Meta/Google Ads) and asking for DMs, but there’s no budget, scope, industry, or timeline beyond “a couple of days.”",
+      "url": "",
+      "recommended_message": "Hey — saw you’re looking for a paid media brain for a couple of days. I can help with Meta + Google Ads. Quick questions so I can confirm fit and estimate time/cost: what’s the goal (leads/ecom), current monthly spend, what needs doing (audit, restructure, new campaigns, tracking), and when do you need me to start? If you share account access level + time zone, I can propose a 2-day plan.",
+      "signals": [
+        "Explicit need for paid media support",
+        "Meta / Google Ads experience required",
+        "Immediate outreach CTA: “drop me a DM”",
+        "Short-term engagement: “for a couple of days”"
+      ],
+      "capturedAt": "2026-02-05T19:39:24.880Z"
+    }
+  ]
+}

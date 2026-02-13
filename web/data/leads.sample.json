@@ -1,0 +1,43 @@
+{
+  "generatedAt": "2026-02-05T16:49:00Z",
+  "plan": "freemium",
+  "freeLeadCount": 5,
+  "leads": [
+    {
+      "id": "li-001",
+      "source": "linkedin_posts",
+      "geo": "UK",
+      "score": "HOT",
+      "title": "Looking for a performance marketing agency for Meta + Google",
+      "summary": "D2C brand needs help scaling paid social + search. ASAP.",
+      "url": "https://www.linkedin.com/...",
+      "recommended_message": "Hey — saw your post about looking for a performance marketing partner. Quick Q: what’s your current monthly spend + primary KPI (ROAS/CAC)? If useful, I can share a 7‑day audit + a 30‑day scale plan.",
+      "signals": ["explicit request", "Meta", "Google", "urgency"],
+      "capturedAt": "2026-02-05T16:40:00Z"
+    },
+    {
+      "id": "li-002",
+      "source": "linkedin_posts",
+      "geo": "US",
+      "score": "WARM",
+      "title": "Need help improving ROAS for Shopify",
+      "summary": "Shopify store owner exploring help with paid ads; budget unclear.",
+      "url": "https://www.linkedin.com/...",
+      "recommended_message": "Hey — happy to help. What’s your AOV and top channel today (Meta/Google)? If you share spend + ROAS, I’ll suggest 3 quick wins.",
+      "signals": ["ROAS", "Shopify"],
+      "capturedAt": "2026-02-05T16:41:00Z"
+    },
+    {
+      "id": "li-003",
+      "source": "linkedin_posts",
+      "geo": "Other",
+      "score": "SKIP",
+      "title": "Hiring performance marketing manager",
+      "summary": "Employment post, not agency buyer intent.",
+      "url": "https://www.linkedin.com/...",
+      "recommended_message": "",
+      "signals": ["job post"],
+      "capturedAt": "2026-02-05T16:42:00Z"
+    }
+  ]
+}

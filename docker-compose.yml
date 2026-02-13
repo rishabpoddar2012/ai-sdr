@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  ai-sdr:
+    build: .
+    container_name: ai-sdr
+    restart: unless-stopped
+    ports:
+      - "4010:4010"
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - .env
+    volumes:
+      - ./leads:/app/leads
+      - ./web/data:/app/web/data
+    command: node web/server.js
+
+  ai-sdr-pipeline:
+    build: .
+    container_name: ai-sdr-pipeline
+    restart: "no"
+    env_file:
+      - .env
+    volumes:
+      - ./leads:/app/leads
+      - ./web/data:/app/web/data
+    command: >
+      sh -c "
+        echo 'Running AI SDR Pipeline...' &&
+        node pipeline/full_pipeline.js &&
+        echo 'Pipeline complete'
+      "
+
+  # Scheduled pipeline runner (alternative to cron)
+  ai-sdr-scheduler:
+    build: .
+    container_name: ai-sdr-scheduler
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./leads:/app/leads
+      - ./web/data:/app/web/data
+    command: >
+      sh -c "
+        echo 'Scheduler started - running pipeline daily at 9:00 AM' &&
+        while true; do
+          current_hour=$$(date +%H)
+          current_min=$$(date +%M)
+          if [ \"$$current_hour\" = \"09\" ] && [ \"$$current_min\" = \"00\" ]; then
+            echo \"[$$(date)] Running scheduled pipeline...\" &&
+            node pipeline/full_pipeline.js &&
+            sleep 60
+          fi
+          sleep 30
+        done
+      "
