@@ -83,15 +83,15 @@ const INTENT_PATTERNS = {
   
   // Service-specific patterns
   services: {
-    facebookAds: [\bfacebook ads?\b, \bmeta ads?\b, \bfb ads?\b, \binstagram ads?\b],
-    googleAds: [\bgoogle ads?\b, \badwords\b, \bgoogle adwords\b, \bsearch ads?\b],
-    ppc: [\bppc\b, \bpaid search\b, \bsearch marketing\b, \bsem\b],
-    seo: [\bseo\b, \bsearch engine optimization\b, \borganic search\b],
-    content: [\bcontent marketing\b, \bblog\b, \bcontent strategy\b],
-    email: [\bemail marketing\b, \bklaviyo\b, \bmailchimp\b, \bnurture\b],
-    cro: [\bcro\b, \bconversion rate\b, \blanding page\b, \bab test\b],
-    analytics: [\banalytics\b, \bgoogle analytics\b, \bga4\b, \bdata\b],
-    shopify: [\bshopify\b, \be-?commerce\b, \bonline store\b, \bd2c\b]
+    facebookAds: [/\bfacebook ads?\b/i, /\bmeta ads?\b/i, /\bfb ads?\b/i, /\binstagram ads?\b/i],
+    googleAds: [/\bgoogle ads?\b/i, /\badwords\b/i, /\bgoogle adwords\b/i, /\bsearch ads?\b/i],
+    ppc: [/\bppc\b/i, /\bpaid search\b/i, /\bsearch marketing\b/i, /\bsem\b/i],
+    seo: [/\bseo\b/i, /\bsearch engine optimization\b/i, /\borganic search\b/i],
+    content: [/\bcontent marketing\b/i, /\bblog\b/i, /\bcontent strategy\b/i],
+    email: [/\bemail marketing\b/i, /\bklaviyo\b/i, /\bmailchimp\b/i, /\bnurture\b/i],
+    cro: [/\bcro\b/i, /\bconversion rate\b/i, /\blanding page\b/i, /\bab test\b/i],
+    analytics: [/\banalytics\b/i, /\bgoogle analytics\b/i, /\bga4\b/i, /\bdata\b/i],
+    shopify: [/\bshopify\b/i, /\be-?commerce\b/i, /\bonline store\b/i, /\bd2c\b/i]
   },
   
   // Negative patterns (reduce score)
