@@ -285,26 +285,24 @@ async function healthCheck() {
     process.stdout.write(`Checking ${scraper.name}... `);
     
     try {
-      // Try to load the module
-      const module = require(`./sources/${key}_scraper.js`);
+      // Try alternative paths first
+      let modulePath;
+      if (key === 'hackernews') modulePath = './sources/hn_intent';
+      else if (key === 'upwork') modulePath = './sources/upwork_rss';
+      else if (key === 'reddit') modulePath = './sources/reddit_jobs';
+      else if (key === 'github') modulePath = './sources/github_jobs_scraper';
+      else if (key === 'twitter') modulePath = './sources/twitter_scraper';
+      else if (key === 'angellist') modulePath = './sources/angellist_scraper';
+      else if (key === 'tradeindia') modulePath = './sources/tradeindia_scraper';
+      else if (key === 'indiamart') modulePath = './sources/indiamart_scraper';
+      else modulePath = `./sources/${key}_scraper`;
+      
+      const module = require(modulePath);
       console.log('✅ OK');
       results.push({ key, name: scraper.name, status: 'ok' });
-    } catch (error) {
-      // Try alternative paths
-      try {
-        let modulePath;
-        if (key === 'hackernews') modulePath = './sources/hn_intent';
-        else if (key === 'upwork') modulePath = './sources/upwork_rss';
-        else if (key === 'reddit') modulePath = './sources/reddit_jobs';
-        else modulePath = `./sources/${key}_scraper`;
-        
-        const module = require(modulePath);
-        console.log('✅ OK');
-        results.push({ key, name: scraper.name, status: 'ok' });
-      } catch (e) {
-        console.log(`❌ ${e.message}`);
-        results.push({ key, name: scraper.name, status: 'error', error: e.message });
-      }
+    } catch (e) {
+      console.log(`❌ ${e.message}`);
+      results.push({ key, name: scraper.name, status: 'error', error: e.message });
     }
   }
   
