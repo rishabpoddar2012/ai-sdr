@@ -87,6 +87,83 @@ module.exports = {
     headless: true
   },
 
+  // IndiaMART configuration
+  indiamart: {
+    enabled: true,
+    queries: [
+      'software development',
+      'digital marketing',
+      'website development',
+      'mobile app development',
+      'digital marketing services',
+      'seo services',
+      'social media marketing',
+      'ecommerce development',
+      'crm software',
+      'erp software'
+    ],
+    maxPages: 2,
+    minResults: 5
+  },
+
+  // GitHub Jobs configuration
+  githubJobs: {
+    enabled: true,
+    maxIssues: 100,
+    filterGrowthOnly: true,
+    minScore: 40,
+    growthKeywords: [
+      'marketing', 'growth', 'sales', 'demand generation', 'lead generation',
+      'performance marketing', 'digital marketing', 'seo', 'sem', 'ppc',
+      'facebook ads', 'meta ads', 'google ads', 'linkedin ads'
+    ]
+  },
+
+  // Twitter/X configuration
+  twitter: {
+    enabled: true,
+    bearerToken: process.env.X_BEARER_TOKEN,
+    queries: [
+      'looking for agency',
+      'hiring marketing',
+      'need marketing help',
+      'looking for freelancer',
+      'need leads',
+      'looking for growth',
+      'hire ppc',
+      'need facebook ads',
+      'need google ads',
+      'looking for seo'
+    ],
+    maxResultsPerQuery: 25,
+    filterNegative: true,
+    minScore: 35
+  },
+
+  // AngelList/Wellfound configuration
+  angellist: {
+    enabled: true,
+    useMock: false,
+    maxJobs: 50,
+    minScore: 45,
+    fundingStages: ['seed', 'series a', 'series b', 'series c', 'recently funded']
+  },
+
+  // TradeIndia configuration
+  tradeindia: {
+    enabled: true,
+    useMock: false,
+    categories: [
+      'packaging-materials',
+      'textile-machinery',
+      'industrial-machinery',
+      'chemicals',
+      'automotive-parts'
+    ],
+    maxListings: 50,
+    minScore: 40
+  },
+
   // Scoring configuration
   scoring: {
     model: 'gpt-4o-mini',
@@ -99,7 +176,9 @@ module.exports = {
       '$',
       'k',
       'monthly',
-      'ad spend'
+      'ad spend',
+      '50k', '100k', '10k',
+      'lac', 'lakh', 'crore'
     ],
     urgencySignals: [
       'asap',
@@ -108,7 +187,8 @@ module.exports = {
       'this week',
       'right now',
       'start soon',
-      'quickly'
+      'quickly',
+      'today'
     ],
     techStackKeywords: [
       'facebook ads',
@@ -121,6 +201,16 @@ module.exports = {
       'klaviyo',
       'google analytics',
       'ga4'
+    ],
+    intentPatterns: [
+      /looking for/i,
+      /need help/i,
+      /recommend/i,
+      /seeking/i,
+      /searching for/i,
+      /hire/i,
+      /hiring/i,
+      /want to/i
     ]
   }
 };
